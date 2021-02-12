@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>My Heading</h2>
+
+<p>Play around with the code and click on the "Run" button to view the result.</p>
+
+<p id="demo"></p>
+<p id="demo1"></p>
+
+
+<script>
+
+
+  class Node {
+    constructor(name) {
+      this.name = name
+      this.checked = false
+      this.cost = Infinity
+      this.pairs = []
+    }
+    isChecked() {
+      return this.checked
+    }
+    setChecked() {
+      return this.checked = true
+    }
+    setCost(val) {
+      return this.cost = val
+    }
+    getCost() {
+      return this.cost
+    }
+    createPair(node, bidirectional, weight) {
+      if(bidirectional) {
+        node.pairs.push([this, bidirectional, weight])
+      }
+      this.pairs.push([node, bidirectional, weight])
+    }
+  }
+
+  class Graph {
+    constructor(...nodes) {
+      this.nodes = nodes
+    }
+
+    findDijkstra(prevNode, endPoint) {
+      if(prevNode.pairs.length === 0) {
+        return `something isn't connected`
+      }
+      let currentNode = prevNode
+      //console.log(`current name is ${currentNode.name}`)
+      //console.log("current node cost = " + currentNode.cost)
+      currentNode.cost === Infinity ? currentNode.cost = 0 : currentNode.cost
+      //console.log(currentNode)
+      //console.log(currentNode.pairs)
+      currentNode.setChecked()
+      let neighbors = currentNode.pairs.map((neighbor) => {
+        let condition = neighbor[0].cost < currentNode.cost + neighbor[2]
+        //console.log(`${neighbor[0].cost} < ${currentNode.getCost()} + ${neighbor[2]}  ${condition}`)
+        if(!neighbor[0].isChecked()) {
+          if(neighbor[0].cost > currentNode.cost + neighbor[2]) {
+              //console.log(`edge cost ${neighbor[2]}`)
+              //console.log(neighbor[0])
+            neighbor[0].setCost(neighbor[2] + currentNode.cost)
+          } else if (neighbor[0].cost === Infinity) {
+            neighbor[0].setCost(neighbor[2])
+          }
+        }
+        return neighbor
+      })
+      //console.log(neighbors)
+      //console.log(currentNode.isChecked())
+      //console.log(neighbors)
+      let neighborsCosts = currentNode.pairs.map((neighbor) => {
+        if(!neighbor[0].isChecked()) {
+          return neighbor[2]
+        } else return Infinity
+      })
+      //console.log(neighborsCosts)
+      //console.log(neighborsCosts)
+      let everythingInfinity = (currentValue) => currentValue === Infinity
+      let infinityCheck = neighborsCosts.every(everythingInfinity)
+      if(infinityCheck) {
+        //console.log(this.nodes)
+        return
+      }
+      let cheapestNeighborIndex = neighborsCosts.indexOf(Math.min(...neighborsCosts))
+      let nextNode = neighbors[cheapestNeighborIndex][0]
+      //console.log(neighborsCostsIndex)
+      //console.log("next node")
+      //console.log(nextNode)
+      this.findDijkstra(nextNode)
+      return this.nodes
+    }
+  }
+  let node1 = new Node("1")
+  let node2 = new Node("2")
+  let node3 = new Node("3")
+  let node4 = new Node("4")
+  let node5 = new Node("5")
+  let node6 = new Node("6")
+  node1.createPair(node2, true, 7)
+  node1.createPair(node3, true, 9)
+  node1.createPair(node6, true, 14)
+  node2.createPair(node3, true, 10)
+  node2.createPair(node4, true, 15)
+  node3.createPair(node4, true, 11)
+  node3.createPair(node6, true, 2)
+  node4.createPair(node5, true, 6)
+  node5.createPair(node6, true, 9)
+  let graph1 = new Graph(node1, node2, node3, node4, node5, node6)
+
+  var t0 = performance.now()
+  console.log(graph1.findDijkstra(node1))   // <---- The function you're measuring time for
+  var t1 = performance.now()
+  console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.")
+  
+</script>
+
+</body>
+</html>
