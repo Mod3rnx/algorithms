@@ -32,6 +32,12 @@
     getCost() {
       return this.cost
     }
+    getPairs() {
+      return this.pairs
+    }
+    getName() {
+      return this.name
+    }
     createPair(node, bidirectional, weight) {
       if(bidirectional) {
         node.pairs.push([this, bidirectional, weight])
@@ -45,54 +51,76 @@
       this.nodes = nodes
     }
 
+    findPath(end) {
+      return end.getCost()
+    }
+
     findDijkstra(prevNode, endPoint) {
-      if(prevNode.pairs.length === 0) {
-        return `something isn't connected`
-      }
-      let currentNode = prevNode
-      //console.log(`current name is ${currentNode.name}`)
-      //console.log("current node cost = " + currentNode.cost)
-      currentNode.cost === Infinity ? currentNode.cost = 0 : currentNode.cost
-      //console.log(currentNode)
-      //console.log(currentNode.pairs)
-      currentNode.setChecked()
-      let neighbors = currentNode.pairs.map((neighbor) => {
-        let condition = neighbor[0].cost < currentNode.cost + neighbor[2]
-        //console.log(`${neighbor[0].cost} < ${currentNode.getCost()} + ${neighbor[2]}  ${condition}`)
-        if(!neighbor[0].isChecked()) {
-          if(neighbor[0].cost > currentNode.cost + neighbor[2]) {
-              //console.log(`edge cost ${neighbor[2]}`)
-              //console.log(neighbor[0])
-            neighbor[0].setCost(neighbor[2] + currentNode.cost)
-          } else if (neighbor[0].cost === Infinity) {
-            neighbor[0].setCost(neighbor[2])
+      if(endPoint) { //if endPoint exists
+        if(prevNode.getPairs().length === 0 || endPoint.getPairs().length === 0) {
+          return `something isn't connected`
+        } else {
+          let currentNode = prevNode
+          if (currentNode.getCost() === Infinity) currentNode.setCost(0)
+          currentNode.setChecked()
+          let neighbors = currentNode.getPairs().map((neighbor) => {
+            if(!neighbor[0].isChecked()) {
+              if(neighbor[0].getCost() > currentNode.getCost() + neighbor[2]) {
+                neighbor[0].setCost(neighbor[2] + currentNode.getCost())
+              } else if (neighbor[0].getCost() === Infinity) {
+                neighbor[0].setCost(neighbor[2])
+              }
+            }
+            return neighbor
+          })
+          let neighborsCosts = currentNode.pairs.map((neighbor) => {
+            if(!neighbor[0].isChecked()) {
+              return neighbor[2]
+            } else return Infinity
+          })
+          let everythingInfinity = (currentValue) => currentValue === Infinity
+          let infinityCheck = neighborsCosts.every(everythingInfinity)
+          if(infinityCheck) {
+            return
           }
+          let cheapestNeighborIndex = neighborsCosts.indexOf(Math.min(...neighborsCosts))
+          let nextNode = neighbors[cheapestNeighborIndex][0]
+          this.findDijkstra(nextNode, endPoint)
+          return this.findPath(endPoint)
         }
-        return neighbor
-      })
-      //console.log(neighbors)
-      //console.log(currentNode.isChecked())
-      //console.log(neighbors)
-      let neighborsCosts = currentNode.pairs.map((neighbor) => {
-        if(!neighbor[0].isChecked()) {
-          return neighbor[2]
-        } else return Infinity
-      })
-      //console.log(neighborsCosts)
-      //console.log(neighborsCosts)
-      let everythingInfinity = (currentValue) => currentValue === Infinity
-      let infinityCheck = neighborsCosts.every(everythingInfinity)
-      if(infinityCheck) {
-        //console.log(this.nodes)
-        return
+      } else { //no endPoint
+        if(prevNode.getPairs().length === 0){
+          return `${prevNode} is not connected`
+        } else {
+          let currentNode = prevNode
+          if (currentNode.getCost() === Infinity) currentNode.setCost(0)
+          currentNode.setChecked()
+          let neighbors = currentNode.getPairs().map((neighbor) => {
+            if(!neighbor[0].isChecked()) {
+              if(neighbor[0].getCost() > currentNode.getCost() + neighbor[2]) {
+                neighbor[0].setCost(neighbor[2] + currentNode.getCost())
+              } else if (neighbor[0].getCost() === Infinity) {
+                neighbor[0].setCost(neighbor[2])
+              }
+            }
+            return neighbor
+          })
+          let neighborsCosts = currentNode.pairs.map((neighbor) => {
+            if(!neighbor[0].isChecked()) {
+              return neighbor[2]
+            } else return Infinity
+          })
+          let everythingInfinity = (currentValue) => currentValue === Infinity
+          let infinityCheck = neighborsCosts.every(everythingInfinity)
+          if(infinityCheck) {
+            return
+          }
+          let cheapestNeighborIndex = neighborsCosts.indexOf(Math.min(...neighborsCosts))
+          let nextNode = neighbors[cheapestNeighborIndex][0]
+          this.findDijkstra(nextNode)
+          return this.nodes
+        }
       }
-      let cheapestNeighborIndex = neighborsCosts.indexOf(Math.min(...neighborsCosts))
-      let nextNode = neighbors[cheapestNeighborIndex][0]
-      //console.log(neighborsCostsIndex)
-      //console.log("next node")
-      //console.log(nextNode)
-      this.findDijkstra(nextNode)
-      return this.nodes
     }
   }
   let node1 = new Node("1")
@@ -101,6 +129,7 @@
   let node4 = new Node("4")
   let node5 = new Node("5")
   let node6 = new Node("6")
+  let node7 = new Node("7")
   node1.createPair(node2, true, 7)
   node1.createPair(node3, true, 9)
   node1.createPair(node6, true, 14)
@@ -113,10 +142,11 @@
   let graph1 = new Graph(node1, node2, node3, node4, node5, node6)
 
   var t0 = performance.now()
-  console.log(graph1.findDijkstra(node1))   // <---- The function you're measuring time for
+  let allPaths = graph1.findDijkstra(node6, node1)
+  console.log(allPaths)
   var t1 = performance.now()
   console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.")
-  
+
 </script>
 
 </body>
