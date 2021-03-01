@@ -61,10 +61,12 @@
       return this.path
     }
 
-    findDijkstra(prevNode) {
+    findDijkstra(prevNode, end) {
       if (prevNode.getPairs().length === 0){
         return `${prevNode} is not connected`
       }
+      const minPath = []
+      console.log(prevNode)
       this.queue.push(prevNode)
       //console.log(this.queue)
       let queueLength = this.queue.length
@@ -72,41 +74,16 @@
       currentNode.setChecked()
       //console.log(currentNode)
       if (currentNode.getCost() === Infinity) currentNode.setCost(0)
-      let neighbors = currentNode.getPairs().filter((neighbor) => {
-        return neighbor[0].isChecked() === false
-      }).map(neighbor => {
-        if(neighbor[0].getCost() > currentNode.getCost() + neighbor[2]) {
-          neighbor[0].setCost(neighbor[2] + currentNode.getCost())
-          neighbor[0].gotValueFrom = currentNode
-        } else if (neighbor[0].getCost() === Infinity) {
-          neighbor[0].setCost(neighbor[2])
-          neighbor[0].gotValueFrom = currentNode
-        }
-        return neighbor
-      })
-      //console.log(neighbors)
-      if(neighbors.length === 0) {
-        if(this.queue[queueLength - 1] === this.queue[queueLength - 3] && this.queue[queueLength - 1] === this.queue[queueLength - 5]) return this
-        //console.log("ok 0 ")
-        neighbors = currentNode.getPairs().map(neighbor => {
-          if(neighbor[0].getCost() > currentNode.getCost() + neighbor[2]) {
-            neighbor[0].setCost(neighbor[2] + currentNode.getCost())
-            neighbor[0].gotValueFrom = currentNode
-          } else if (neighbor[0].getCost() === Infinity) {
-            neighbor[0].setCost(neighbor[2])
-            neighbor[0].gotValueFrom = currentNode
-          }
-          return neighbor
-        })
-        //console.log(neighbors)
+      let cheapestNeighbors = [...currentNode.getPairs()].sort((a,b) => a[2] - b[2]).filter(element => !element[0].isChecked())
+      if(cheapestNeighbors.length === 0) {
+        return
       }
-      let cheapestNeighborNumber = neighbors.map(element => element[2])
-      //console.log(cheapestNeighborNumber)
-      let cheapestNeighborIndex = cheapestNeighborNumber.indexOf(Math.min(...cheapestNeighborNumber))
-      //console.log(cheapestNeighborIndex)
-      let nextNode = neighbors[cheapestNeighborIndex][0]
-      //console.log(nextNode)
-      this.findDijkstra(nextNode)
+      console.log(cheapestNeighbors)
+      let nextNode = cheapestNeighbors[0][0]
+      nextNode.gotValueFrom = currentNode
+      nextNode.setCost(cheapestNeighbors[0][2])
+      console.log(nextNode)
+      this.findDijkstra(nextNode, end)
       return this
     }
   }
@@ -141,11 +118,12 @@
   node7.createPair(node10, true, 14)
   node8.createPair(node10, true, 2)
   node9.createPair(node10, true, 3)*/
+
   node1.createPair(node2, true, 7)
   node1.createPair(node3, true, 9)
   node1.createPair(node6, true, 14)
   node2.createPair(node3, true, 10)
-  node2.createPair(node4, true, 1)
+  node2.createPair(node4, true, 15)
   node3.createPair(node4, true, 11)
   node3.createPair(node6, true, 2)
   node6.createPair(node5, true, 9)
@@ -163,7 +141,6 @@
   node6.createPair(node7, true, 5)
 */
 
-console.log(node1)
   let graph1 = new Graph(node1, node2, node3, node4, node5, node6)//, node7, node8, node9, node10)//, node7, node8)
 /*
   let from = node1
